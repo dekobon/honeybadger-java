@@ -13,6 +13,7 @@ import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.TimeZone;
 
 /**
@@ -31,7 +32,7 @@ public class ServerDetails implements Serializable {
     public final String time;
     public final Stats stats;
 
-    public ServerDetails(ConfigContext context) {
+    public ServerDetails(final ConfigContext context) {
         this.environment_name = context.getEnvironment();
         this.hostname = hostname();
         this.project_root = projectRoot();
@@ -40,11 +41,11 @@ public class ServerDetails implements Serializable {
         this.stats = new Stats();
     }
 
-    public ServerDetails(String environment_name, String hostname, String project_root,
-                         Integer pid, String time, Stats stats) {
-        this.environment_name = environment_name;
+    public ServerDetails(final String environmentName, final String hostname, final String projectRoot,
+                         final Integer pid, final String time, final Stats stats) {
+        this.environment_name = environmentName;
         this.hostname = hostname;
-        this.project_root = project_root;
+        this.project_root = projectRoot;
         this.pid = pid;
         this.time = time;
         this.stats = stats;
@@ -93,7 +94,8 @@ public class ServerDetails implements Serializable {
     /**
      * Finds the process id for the running JVM.
      *
-     * @see <a href="http://stackoverflow.com/questions/35842/how-can-a-java-program-get-its-own-process-id/7690178#7690178">refrenced this implementation</a>
+     * @see <a href="http://stackoverflow.com/questions/35842/how-can-a-java-program-get-its-own-process-id/7690178#7690178"
+     * >referenced this implementation</a>
      * @return process id or null if not found
      */
     protected static Integer pid() {
@@ -124,27 +126,22 @@ public class ServerDetails implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         ServerDetails that = (ServerDetails) o;
-
-        if (environment_name != null ? !environment_name.equals(that.environment_name) : that.environment_name != null)
-            return false;
-        if (hostname != null ? !hostname.equals(that.hostname) : that.hostname != null) return false;
-        if (project_root != null ? !project_root.equals(that.project_root) : that.project_root != null) return false;
-        return !(pid != null ? !pid.equals(that.pid) : that.pid != null);
-
+        return Objects.equals(environment_name, that.environment_name) &&
+                Objects.equals(hostname, that.hostname) &&
+                Objects.equals(project_root, that.project_root) &&
+                Objects.equals(pid, that.pid) &&
+                Objects.equals(time, that.time) &&
+                Objects.equals(stats, that.stats);
     }
 
     @Override
     public int hashCode() {
-        int result = environment_name != null ? environment_name.hashCode() : 0;
-        result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
-        result = 31 * result + (project_root != null ? project_root.hashCode() : 0);
-        result = 31 * result + (pid != null ? pid.hashCode() : 0);
-        return result;
+
+        return Objects.hash(environment_name, hostname, project_root, pid, time, stats);
     }
 
     @Override

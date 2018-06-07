@@ -16,14 +16,14 @@ public class Causes extends LinkedList<Cause> implements Serializable {
 
     private static final int MAX_CAUSES = 100;
 
-    public Causes(ConfigContext config, Throwable rootError) {
+    public Causes(final ConfigContext config, final Throwable rootError) {
         if (rootError == null) {
             throw new IllegalArgumentException("Error can't be null");
         }
         addCauses(config, rootError);
     }
 
-    void addCauses(ConfigContext config, Throwable rootError) {
+    void addCauses(final ConfigContext config, final Throwable rootError) {
         if (rootError.getCause() == null) return;
 
         Throwable lastCause = null;
@@ -41,6 +41,6 @@ public class Causes extends LinkedList<Cause> implements Serializable {
             // for too big of a cause trace
             if (++iterations > MAX_CAUSES) break;
             lastCause = nextCause;
-        } while ((nextCause = nextCause.getCause()) != null);
+        } while (null != (nextCause = nextCause.getCause())); //checkstyle ignore
     }
 }

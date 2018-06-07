@@ -3,6 +3,7 @@ package io.honeybadger.reporter.dto;
 import io.honeybadger.reporter.config.ConfigContext;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * One single line on a backtrace.
@@ -23,7 +24,7 @@ public class BacktraceElement implements Serializable {
 
         private final String name;
 
-        Context(String name) {
+        Context(final String name) {
             this.name = name;
         }
 
@@ -38,8 +39,8 @@ public class BacktraceElement implements Serializable {
     public final String number;
     public final String context;
 
-    public BacktraceElement(ConfigContext config, String number, String file,
-                            String method) {
+    public BacktraceElement(final ConfigContext config, final String number, final String file,
+                            final String method) {
         this.config = config;
         this.number = number;
         this.file = file;
@@ -47,7 +48,7 @@ public class BacktraceElement implements Serializable {
         this.context = calculateContext(method).getName();
     }
 
-    public BacktraceElement(ConfigContext config, StackTraceElement element) {
+    public BacktraceElement(final ConfigContext config, final StackTraceElement element) {
         this.config = config;
         this.number = String.valueOf(element.getLineNumber());
         this.file = String.valueOf(element.getFileName());
@@ -55,20 +56,20 @@ public class BacktraceElement implements Serializable {
         this.context = calculateContext(method).getName();
     }
 
-    static String formatMethod(StackTraceElement element) {
+    static String formatMethod(final StackTraceElement element) {
         return String.format("%s.%s",
                 element.getClassName(), element.getMethodName());
     }
 
-    Context calculateContext(String method) {
+    Context calculateContext(final String methodName) {
         final String appPackage = config.getApplicationPackage();
         final Context methodContext;
 
         if (appPackage == null || appPackage.isEmpty()) {
             methodContext = Context.ALL;
-        } else if (method == null || method.isEmpty()) {
+        } else if (methodName == null || methodName.isEmpty()) {
             methodContext = Context.ALL;
-        } else if (method.startsWith(appPackage)) {
+        } else if (methodName.startsWith(appPackage)) {
             methodContext = Context.APP;
         } else {
             methodContext = Context.ALL;
@@ -78,25 +79,19 @@ public class BacktraceElement implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         BacktraceElement that = (BacktraceElement) o;
-
-        if (file != null ? !file.equals(that.file) : that.file != null) return false;
-        if (method != null ? !method.equals(that.method) : that.method != null) return false;
-        if (number != null ? !number.equals(that.number) : that.number != null) return false;
-        return !(context != null ? !context.equals(that.context) : that.context != null);
-
+        return Objects.equals(config, that.config) &&
+                Objects.equals(file, that.file) &&
+                Objects.equals(method, that.method) &&
+                Objects.equals(number, that.number) &&
+                Objects.equals(context, that.context);
     }
 
     @Override
     public int hashCode() {
-        int result = file != null ? file.hashCode() : 0;
-        result = 31 * result + (method != null ? method.hashCode() : 0);
-        result = 31 * result + (number != null ? number.hashCode() : 0);
-        result = 31 * result + (context != null ? context.hashCode() : 0);
-        return result;
+        return Objects.hash(config, file, method, number, context);
     }
 }

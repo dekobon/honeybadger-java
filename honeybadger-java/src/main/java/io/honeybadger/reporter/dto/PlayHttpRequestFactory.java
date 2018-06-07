@@ -15,19 +15,21 @@ import java.util.Optional;
  * @author <a href="https://github.com/dekobon">Elijah Zupancic</a>
  * @since 1.0.9
  */
-public class PlayHttpRequestFactory {
-    public static Request create(ConfigContext config,
-                                 Http.Request httpRequest) {
+public final class PlayHttpRequestFactory {
+    private PlayHttpRequestFactory() { }
+
+    public static Request create(final ConfigContext config,
+                                 final Http.Request httpRequest) {
         Context context = createContext(httpRequest);
         String url = getFullURL(httpRequest);
         Params params = createParams(config, httpRequest);
         Session session = createSession(httpRequest);
-        CgiData cgi_data = createCgiData(httpRequest);
+        CgiData cgiData = createCgiData(httpRequest);
 
-        return new Request(context, url, params, session, cgi_data);
+        return new Request(context, url, params, session, cgiData);
     }
 
-    protected static Context createContext(Http.Request httpRequest) {
+    protected static Context createContext(final Http.Request httpRequest) {
         final Context context = new Context();
         final Optional<String> username = httpRequest.attrs().getOptional(Security.USERNAME);
 
@@ -36,12 +38,12 @@ public class PlayHttpRequestFactory {
         return context;
     }
 
-    protected static String getFullURL(Http.Request httpRequest) {
+    protected static String getFullURL(final Http.Request httpRequest) {
         return httpRequest.uri();
     }
 
-    protected static Params createParams(ConfigContext config,
-                                         Http.Request httpRequest) {
+    protected static Params createParams(final ConfigContext config,
+                                         final Http.Request httpRequest) {
         Http.RequestBody body = httpRequest.body();
 
         if (body == null) return new Params(config.getExcludedParams());
@@ -50,7 +52,7 @@ public class PlayHttpRequestFactory {
                                   body.asFormUrlEncoded());
     }
 
-    protected static Session createSession(Http.Request httpRequest) {
+    protected static Session createSession(final Http.Request httpRequest) {
         final Session session = new Session();
 
         // We don't support Play sessions or flash scopes yet
@@ -60,7 +62,7 @@ public class PlayHttpRequestFactory {
     }
 
     @SuppressWarnings("StringSplitter")
-    protected static CgiData createCgiData(Http.Request httpRequest) {
+    protected static CgiData createCgiData(final Http.Request httpRequest) {
         final CgiData cgiData = new CgiData()
                 .setRequestMethod(httpRequest.method())
                 .setContentLength(getHeaderValue(httpRequest, HttpHeaders.CONTENT_LENGTH))
@@ -90,12 +92,12 @@ public class PlayHttpRequestFactory {
         return cgiData;
     }
 
-    static Object getHeaderValue(Http.Request httpRequest, final String key) {
+    static Object getHeaderValue(final Http.Request httpRequest, final String key) {
         final Http.Headers headers = httpRequest.getHeaders();
         return headers.get(key).orElse(null);
     }
 
-    static String parseCookies(Http.Request httpRequest) {
+    static String parseCookies(final Http.Request httpRequest) {
         Http.Cookies cookies = httpRequest.cookies();
 
         Iterator<Http.Cookie> itr = cookies.iterator();

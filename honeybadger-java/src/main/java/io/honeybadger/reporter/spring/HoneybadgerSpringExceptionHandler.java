@@ -19,7 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 import static org.springframework.http.MediaType.*;
 
@@ -31,20 +35,20 @@ import static org.springframework.http.MediaType.*;
  */
 @ControllerAdvice
 public class HoneybadgerSpringExceptionHandler {
-    protected final SpringConfigContext context;
-    protected final NoticeReporter reporter;
-    protected final FeedbackForm feedbackForm;
+    private final SpringConfigContext context;
+    private final NoticeReporter reporter;
+    private final FeedbackForm feedbackForm;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    public HoneybadgerSpringExceptionHandler(SpringConfigContext context) {
+    public HoneybadgerSpringExceptionHandler(final SpringConfigContext context) {
         this.context = context;
         this.reporter = new HoneybadgerReporter(context);
         this.feedbackForm = new FeedbackForm(context);
     }
 
-    protected boolean acceptsOnlyJson(HttpServletRequest request) {
+    protected boolean acceptsOnlyJson(final HttpServletRequest request) {
         Enumeration<String> enumeration = request.getHeaders("Accept");
         if (enumeration == null) return false;
         if (!enumeration.hasMoreElements()) return false;
@@ -58,14 +62,14 @@ public class HoneybadgerSpringExceptionHandler {
         }
     }
 
-    protected String jsonErrorString(UUID errorId)
+    protected String jsonErrorString(final UUID errorId)
             throws IOException {
         return String.format("{ error_id : \"%s\" }", errorId);
     }
 
     @ExceptionHandler(value = Throwable.class)
-    public ResponseEntity<String> defaultErrorHandler(HttpServletRequest request,
-                                            Exception exception) throws Exception {
+    public ResponseEntity<String> defaultErrorHandler(final HttpServletRequest request,
+                                            final Exception exception) throws Exception {
 
         // Rethrow annotated exceptions or they will be processed here instead OR
         // throw if we have feedback form disabled
@@ -73,7 +77,7 @@ public class HoneybadgerSpringExceptionHandler {
             throw exception;
         }
 
-        NoticeReportResult result = reporter.reportError(exception, request);
+        NoticeReportResult result = getReporter().reportError(exception, request);
 
         if (logger.isErrorEnabled()) {
             String msg = String.format("Internal server error [honeybadger-id: %s]",
@@ -81,7 +85,7 @@ public class HoneybadgerSpringExceptionHandler {
             logger.error(msg, exception);
         }
 
-        if (!context.isFeedbackFormDisplayed()) {
+        if (!getContext().isFeedbackFormDisplayed()) {
             String msg = "Internal server error";
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(TEXT_PLAIN)
@@ -96,11 +100,23 @@ public class HoneybadgerSpringExceptionHandler {
 
         Writer writer = new StringWriter();
         Locale locale = request.getLocale();
-        feedbackForm.renderHtml(result.getId(), exception.getMessage(),
+        getFeedbackForm().renderHtml(result.getId(), exception.getMessage(),
                 writer, locale);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .contentType(TEXT_HTML)
                 .body(writer.toString());
+    }
+
+    protected SpringConfigContext getContext() {
+        return context;
+    }
+
+    protected NoticeReporter getReporter() {
+        return reporter;
+    }
+
+    protected FeedbackForm getFeedbackForm() {
+        return feedbackForm;
     }
 }

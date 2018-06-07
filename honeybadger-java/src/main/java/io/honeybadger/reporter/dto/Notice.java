@@ -3,6 +3,7 @@ package io.honeybadger.reporter.dto;
 import io.honeybadger.reporter.config.ConfigContext;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Class representing an error that is reported to the Honeybadger API.
@@ -22,27 +23,18 @@ public class Notice implements Serializable {
     private Request request;
     private NoticeDetails error;
 
-    public Notice(ConfigContext config) {
+    public Notice(final ConfigContext config) {
         this.config = config;
         this.server = new ServerDetails(config);
         this.details = new Details(this.config);
         this.details.addDefaultDetails();
     }
 
-    public Notice() {
-        ConfigContext config = ConfigContext.threadLocal.get();
-        if (config == null) throw new NullPointerException(
-                "Unable to get the expected ConfigContext from ThreadLocal");
-
-        this.config = config;
-        this.server = new ServerDetails(config);
-    }
-
     public Notifier getNotifier() {
         return notifier;
     }
 
-    public Notice setNotifier(Notifier notifier) {
+    public Notice setNotifier(final Notifier notifier) {
         this.notifier = notifier;
         return this;
     }
@@ -51,12 +43,12 @@ public class Notice implements Serializable {
         return error;
     }
 
-    public Notice setError(NoticeDetails error) {
+    public Notice setError(final NoticeDetails error) {
         this.error = error;
         return this;
     }
 
-    public Notice setServer(ServerDetails server) {
+    public Notice setServer(final ServerDetails server) {
         this.server = server;
         return this;
     }
@@ -69,7 +61,7 @@ public class Notice implements Serializable {
         return details;
     }
 
-    public Notice setDetails(Details details) {
+    public Notice setDetails(final Details details) {
         this.details = details;
         return this;
     }
@@ -78,33 +70,26 @@ public class Notice implements Serializable {
         return request;
     }
 
-    public Notice setRequest(Request request) {
+    public Notice setRequest(final Request request) {
         this.request = request;
         return this;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
-        Notice that = (Notice) o;
-
-        if (notifier != null ? !notifier.equals(that.notifier) : that.notifier != null) return false;
-        if (server != null ? !server.equals(that.server) : that.server != null) return false;
-        if (details != null ? !details.equals(that.details) : that.details != null) return false;
-        if (request != null ? !request.equals(that.request) : that.request != null) return false;
-        return !(error != null ? !error.equals(that.error) : that.error != null);
-
+        Notice notice = (Notice) o;
+        return Objects.equals(config, notice.config) &&
+                Objects.equals(notifier, notice.notifier) &&
+                Objects.equals(server, notice.server) &&
+                Objects.equals(details, notice.details) &&
+                Objects.equals(request, notice.request) &&
+                Objects.equals(error, notice.error);
     }
 
     @Override
     public int hashCode() {
-        int result = notifier != null ? notifier.hashCode() : 0;
-        result = 31 * result + (server != null ? server.hashCode() : 0);
-        result = 31 * result + (details != null ? details.hashCode() : 0);
-        result = 31 * result + (request != null ? request.hashCode() : 0);
-        result = 31 * result + (error != null ? error.hashCode() : 0);
-        return result;
+        return Objects.hash(config, notifier, server, details, request, error);
     }
 }

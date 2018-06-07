@@ -9,11 +9,19 @@ import io.honeybadger.reporter.config.ServletFilterConfigContext;
 import io.honeybadger.reporter.config.SystemSettingsConfigContext;
 import org.apache.http.entity.ContentType;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.UUID;
 
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
@@ -29,17 +37,16 @@ public class HoneybadgerFilter implements Filter {
     private FeedbackForm feedbackForm;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(final FilterConfig filterConfig) throws ServletException {
         ConfigContext filterContext = new ServletFilterConfigContext(filterConfig);
-        ConfigContext config = new SystemSettingsConfigContext(filterContext);
-        this.config = config;
+        this.config = new SystemSettingsConfigContext(filterContext);
         this.reporter = new HoneybadgerReporter(config);
         this.feedbackForm = new FeedbackForm(config);
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response,
-                         FilterChain chain)
+    public void doFilter(final ServletRequest request, final ServletResponse response,
+                         final FilterChain chain)
             throws IOException, ServletException {
         try {
             chain.doFilter(request, response);
@@ -80,7 +87,7 @@ public class HoneybadgerFilter implements Filter {
         }
     }
 
-    protected boolean acceptsOnlyJson(HttpServletRequest request) {
+    protected boolean acceptsOnlyJson(final HttpServletRequest request) {
         Enumeration<String> enumeration = request.getHeaders("Accept");
         if (enumeration == null) return false;
         if (!enumeration.hasMoreElements()) return false;
@@ -94,8 +101,8 @@ public class HoneybadgerFilter implements Filter {
         }
     }
 
-    protected void jsonError(UUID errorId, ServletResponse response)
-            throws IOException{
+    protected void jsonError(final UUID errorId, final ServletResponse response)
+            throws IOException {
         String json = String.format("{ error_id : \"%s\" }", errorId);
         response.setContentType(ContentType.APPLICATION_JSON.getMimeType());
         response.getWriter().append(json);
@@ -110,11 +117,11 @@ public class HoneybadgerFilter implements Filter {
         return reporter;
     }
 
-    void setReporter(NoticeReporter reporter) {
+    void setReporter(final NoticeReporter reporter) {
         this.reporter = reporter;
     }
 
-    public void setFeedbackForm(FeedbackForm feedbackForm) {
+    public void setFeedbackForm(final FeedbackForm feedbackForm) {
         this.feedbackForm = feedbackForm;
     }
 

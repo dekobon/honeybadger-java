@@ -10,6 +10,7 @@ import io.honeybadger.reporter.dto.NoticeDetails;
 import io.honeybadger.reporter.dto.PlayHttpRequestFactory;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
@@ -39,9 +40,10 @@ import java.util.UUID;
  * @since 1.0.0
  */
 public class HoneybadgerReporter implements NoticeReporter {
-    private static Set<Class<?>> EXCEPTION_CONTEXT_CLASSES = findExceptionContextClasses();
+    public static final int RETRIES = 3;
+    private static Set<Class<?>> exceptionContextClasses = findExceptionContextClasses();
 
-    protected ConfigContext config;
+    private ConfigContext config;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Gson gson = new GsonBuilder()
             .setExclusionStrategies(new HoneybadgerExclusionStrategy())
@@ -51,8 +53,8 @@ public class HoneybadgerReporter implements NoticeReporter {
         this(new SystemSettingsConfigContext());
     }
 
-    public HoneybadgerReporter(ConfigContext config) {
-        this.config = config;
+    public HoneybadgerReporter(final ConfigContext config) {
+        this.setConfig(config);
 
         if (config.getApiKey() == null) {
             throw new IllegalArgumentException("API key must be set");
@@ -153,13 +155,13 @@ public class HoneybadgerReporter implements NoticeReporter {
         // SERVLET REQUEST - ALSO USED BY SPRING
         } else if (supportsHttpServletRequest() && request instanceof javax.servlet.http.HttpServletRequest)  {
             logger.debug("Reporting from a servlet context");
-            requestDetails =  HttpServletRequestFactory.create(config,
+            requestDetails =  HttpServletRequestFactory.create(getConfig(),
                     (javax.servlet.http.HttpServletRequest) request);
 
         // PLAY FRAMEWORK REQUEST
         } else if (supportsPlayHttpRequest() && request instanceof play.mvc.Http.Request) {
             logger.debug("Reporting from the Play Framework");
-            requestDetails = PlayHttpRequestFactory.create(config,
+            requestDetails = PlayHttpRequestFactory.create(getConfig(),
                     (play.mvc.Http.Request)request);
         } else {
             logger.debug("No request object available");
@@ -237,11 +239,11 @@ public class HoneybadgerReporter implements NoticeReporter {
                                              final Set<String> tags) {
         final String errorClassName = error.getClass().getName();
         if (errorClassName != null &&
-                config.getExcludedClasses().contains(errorClassName)) {
+                getConfig().getExcludedClasses().contains(errorClassName)) {
             return null;
         }
 
-        final Notice notice = new Notice(config);
+        final Notice notice = new Notice(getConfig());
 
         if (request != null) {
             final String reportedMessage;
@@ -252,26 +254,26 @@ public class HoneybadgerReporter implements NoticeReporter {
             }
 
             NoticeDetails noticeDetails = new NoticeDetails(
-                    config, error, tags, reportedMessage);
+                    getConfig(), error, tags, reportedMessage);
             notice.setRequest(request).setError(noticeDetails);
         } else {
-            NoticeDetails noticeDetails = new NoticeDetails(config, error, tags);
+            NoticeDetails noticeDetails = new NoticeDetails(getConfig(), error, tags);
             notice.setError(noticeDetails);
         }
 
-        for (int retries = 0; retries < 3; retries++) {
+        for (int retries = 0; retries < RETRIES; retries++) {
             try {
                 String json = gson.toJson(notice);
                 HttpResponse response = sendToHoneybadger(json)
                         .returnResponse();
                 int responseCode = response.getStatusLine().getStatusCode();
 
-                if (responseCode != 201)
+                if (responseCode != HttpStatus.SC_CREATED) {
                     logger.error("Honeybadger did not respond with the " +
-                                 "correct code. Response was [{}]. Retries={}",
-                                 responseCode, retries);
-                else {
-                    UUID id = parseErrorId(response, gson);
+                                    "correct code. Response was [{}]. Retries={}",
+                            responseCode, retries);
+                } else {
+                    UUID id = parseErrorId(response);
 
                     return new NoticeReportResult(id, notice, error);
                 }
@@ -288,7 +290,7 @@ public class HoneybadgerReporter implements NoticeReporter {
         return null;
     }
 
-    private UUID parseErrorId(HttpResponse response, Gson gson)
+    private UUID parseErrorId(final HttpResponse response)
             throws IOException {
         try (InputStream in = response.getEntity().getContent();
              Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
@@ -333,9 +335,9 @@ public class HoneybadgerReporter implements NoticeReporter {
      * @return Status code from the Honeybadger API
      * @throws IOException thrown when a network was encountered
      */
-    private Response sendToHoneybadger(String jsonError) throws IOException {
+    private Response sendToHoneybadger(final String jsonError) throws IOException {
         URI honeybadgerUrl = URI.create(
-                String.format("%s/%s", config.getHoneybadgerUrl(), "v1/notices"));
+                String.format("%s/%s", getConfig().getHoneybadgerUrl(), "v1/notices"));
         Request request = buildRequest(honeybadgerUrl, jsonError);
 
         return request.execute();
@@ -349,10 +351,10 @@ public class HoneybadgerReporter implements NoticeReporter {
      * @param jsonError Error JSON payload
      * @return a configured request object
      */
-    private Request buildRequest(URI honeybadgerUrl, String jsonError) {
+    private Request buildRequest(final URI honeybadgerUrl, final String jsonError) {
         Request request = Request
                .Post(honeybadgerUrl)
-               .addHeader("X-API-Key", config.getApiKey())
+               .addHeader("X-API-Key", getConfig().getApiKey())
                .addHeader("Accept", "application/json")
                .version(HttpVersion.HTTP_1_1)
                .bodyString(jsonError, ContentType.APPLICATION_JSON);
@@ -377,11 +379,11 @@ public class HoneybadgerReporter implements NoticeReporter {
      * @return true if a contexted exception, otherwise false
      */
     private static boolean exceptionClassHasContextedVariables(final Class<?> clazz) {
-        if (EXCEPTION_CONTEXT_CLASSES == null || EXCEPTION_CONTEXT_CLASSES.isEmpty()) {
+        if (exceptionContextClasses == null || exceptionContextClasses.isEmpty()) {
             return false;
         }
 
-        for (Class<?> exceptionClass : EXCEPTION_CONTEXT_CLASSES) {
+        for (Class<?> exceptionClass : exceptionContextClasses) {
             if (exceptionClass.isAssignableFrom(clazz)) {
                 return true;
             }
@@ -410,5 +412,9 @@ public class HoneybadgerReporter implements NoticeReporter {
         }
 
         return Collections.unmodifiableSet(classes);
+    }
+
+    protected void setConfig(final ConfigContext config) {
+        this.config = config;
     }
 }

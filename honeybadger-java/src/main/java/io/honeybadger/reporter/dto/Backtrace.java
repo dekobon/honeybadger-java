@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Class representing an ordered collection of back trace elements.
+ * Class representing an ordered collection of backtrace elements.
  * @author <a href="https://github.com/dekobon">Elijah Zupancic</a>
  * @since 1.0.9
  */
@@ -16,7 +16,13 @@ public class Backtrace extends ArrayList<BacktraceElement>
 
     private final ConfigContext config;
 
-    public Backtrace(ConfigContext config, Throwable error) {
+    /**
+     * Adds each backtrace element in an error to the backtrace. The
+     * config provide the required context to allow forwarding the error to HoneyBadger.
+     * @param config Environment
+     * @param error Error or Exception instance
+     */
+    public Backtrace(final ConfigContext config, final Throwable error) {
         this.config = config;
 
         if (error == null) {
@@ -26,7 +32,11 @@ public class Backtrace extends ArrayList<BacktraceElement>
         addTrace(error);
     }
 
-    void addTrace(Throwable error) {
+    /**
+     * Add an error to the collection.
+     * @param error Error or Exception instance
+     */
+    void addTrace(final Throwable error) {
         for (StackTraceElement trace : error.getStackTrace()) {
             add(new BacktraceElement(config, trace));
         }

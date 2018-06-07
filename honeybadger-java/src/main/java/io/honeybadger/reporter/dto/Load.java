@@ -30,7 +30,7 @@ public class Load implements Serializable {
         this.fifteen = loadAverages[2];
     }
 
-    public Load(Number one, Number five, Number fifteen) {
+    public Load(final Number one, final Number five, final Number fifteen) {
         this.one = one;
         this.five = five;
         this.fifteen = fifteen;
@@ -86,8 +86,8 @@ public class Load implements Serializable {
         }
     }
 
-    static Number[] defaultLoadAverages(OperatingSystemMXBean osBean) {
-        return new Number[] { osBean.getSystemLoadAverage(), null, null };
+    static Number[] defaultLoadAverages(final OperatingSystemMXBean osBean) {
+        return new Number[] {osBean.getSystemLoadAverage(), null, null };
     }
 
     @Override
@@ -101,9 +101,9 @@ public class Load implements Serializable {
         }
 
         final Load load = (Load) o;
-        return Objects.equals(one, load.one)
-                && Objects.equals(five, load.five)
-                && Objects.equals(fifteen, load.fifteen);
+        return Objects.equals(one, load.one) &&
+                Objects.equals(five, load.five) &&
+                Objects.equals(fifteen, load.fifteen);
     }
 
     @Override

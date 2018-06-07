@@ -5,7 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link ConfigContext} implementation that is used for configuring instances
@@ -93,7 +97,7 @@ public class MapConfigContext implements ConfigContext {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public MapConfigContext(Map<?, ?> backingMap) {
+    public MapConfigContext(final Map<?, ?> backingMap) {
         this.backingMap = backingMap;
     }
 
@@ -220,7 +224,7 @@ public class MapConfigContext implements ConfigContext {
      * @param value configuration value
      * @return return value of the put() operation from the backing map
      */
-    Object put(String key, String value) {
+    Object put(final String key, final String value) {
         if (key == null) throw new IllegalArgumentException("Config key can't be null");
         if (key.isEmpty()) throw new IllegalArgumentException("Config key can't be blank");
 
@@ -230,7 +234,7 @@ public class MapConfigContext implements ConfigContext {
         return map.put(key, value);
     }
 
-    private String normalizeEmptyAndNullAndDefaultToStringValue(Object key) {
+    private String normalizeEmptyAndNullAndDefaultToStringValue(final Object key) {
         Object value = backingMap.get(key);
         if (value == null) return null;
 
@@ -241,7 +245,7 @@ public class MapConfigContext implements ConfigContext {
         return stringValue;
     }
 
-    private Boolean parseBoolean(Object key) {
+    private Boolean parseBoolean(final Object key) {
         Object value = backingMap.get(key);
 
         if (value == null) return null;
@@ -265,7 +269,7 @@ public class MapConfigContext implements ConfigContext {
         return null;
     }
 
-    private Set<String> parseCsvStringSetOrPassOnObject(Object key) {
+    private Set<String> parseCsvStringSetOrPassOnObject(final Object key) {
         Object value = backingMap.get(key);
 
         if (value == null) return null;

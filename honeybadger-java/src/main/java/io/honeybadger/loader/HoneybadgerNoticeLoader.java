@@ -7,6 +7,7 @@ import io.honeybadger.reporter.HoneybadgerExclusionStrategy;
 import io.honeybadger.reporter.config.ConfigContext;
 import io.honeybadger.reporter.dto.Notice;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.slf4j.Logger;
@@ -26,17 +27,18 @@ import java.util.UUID;
  */
 public class HoneybadgerNoticeLoader {
     private static final int RETRIES = 3;
+    public static final int RETRY_DELAY_MILLIS = 5000;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Gson gson = new GsonBuilder()
             .setExclusionStrategies(new HoneybadgerExclusionStrategy())
             .create();
     private ConfigContext config;
 
-    public HoneybadgerNoticeLoader(ConfigContext config) {
+    public HoneybadgerNoticeLoader(final ConfigContext config) {
         this.config = config;
     }
 
-    String pullFaultJson(UUID faultId) throws IOException {
+    String pullFaultJson(final UUID faultId) throws IOException {
         String readApiKey = config.getHoneybadgerReadApiKey();
 
         if (readApiKey == null) {
@@ -64,19 +66,19 @@ public class HoneybadgerNoticeLoader {
 
             httpResponse = response.returnResponse();
 
-            if (httpResponse.getStatusLine().getStatusCode() == 200) {
+            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 break;
             }
             try {
-                Thread.sleep(5000);
+                Thread.sleep(RETRY_DELAY_MILLIS);
             } catch (InterruptedException e) {
                 break;
             }
 
             if  (i == RETRIES - 1) {
-                String msg = String.format("Unable to get notice from API.\n"
-                        + "[Response Status Code=%d]\n"
-                        + "[Response Reason=%s]",
+                String msg = String.format("Unable to get notice from API.\n" +
+                                "[Response Status Code=%d]\n" +
+                                "[Response Reason=%s]",
                         httpResponse.getStatusLine().getStatusCode(),
                         httpResponse.getStatusLine().getReasonPhrase());
                 throw new IllegalArgumentException(msg);
@@ -89,7 +91,7 @@ public class HoneybadgerNoticeLoader {
         return out.toString();
     }
 
-    public Notice findErrorDetails(UUID faultId) throws IOException {
+    public Notice findErrorDetails(final UUID faultId) throws IOException {
         String json = pullFaultJson(faultId);
 
         // HACK: Since our API is not symmetric, we do this in order to rename fields
@@ -101,10 +103,10 @@ public class HoneybadgerNoticeLoader {
         Notice error;
 
         try {
-            ConfigContext.threadLocal.set(config);
+            ConfigContext.THREAD_LOCAL.set(config);
             error = gson.fromJson(originalJson, Notice.class);
         } finally {
-            ConfigContext.threadLocal.remove();
+            ConfigContext.THREAD_LOCAL.remove();
         }
 
         return error;

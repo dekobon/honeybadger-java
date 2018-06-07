@@ -2,6 +2,7 @@ package io.honeybadger.reporter.config;
 
 import java.net.URI;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import static io.honeybadger.reporter.config.MapConfigContext.*;
@@ -17,22 +18,23 @@ import static io.honeybadger.util.HBStringUtils.isPresent;
  * @since 1.0.10
  */
 public abstract class BaseChainedConfigContext implements ConfigContext {
-    protected String environment;
-    protected URI honeybadgerUrl;
-    protected String apiKey;
-    protected Set<String> excludedSysProps = new HashSet<>();
-    protected Set<String> excludedParams = new HashSet<>();
-    protected Set<String> excludedClasses = new HashSet<>();
-    protected String applicationPackage;
-    protected String honeybadgerReadApiKey;
-    protected Boolean feedbackFormDisplayed;
-    protected String feedbackFormPath;
-    protected String httpProxyHost;
-    protected Integer httpProxyPort;
-
-    /** Singleton instance of default configuration for easy reference. */
+    /**
+     * Singleton instance of default configuration for easy reference.
+     */
     public static final ConfigContext DEFAULT_CONFIG =
             new DefaultsConfigContext();
+    private String environment;
+    private URI honeybadgerUrl;
+    private String apiKey;
+    private Set<String> excludedSysProps = new HashSet<>();
+    private Set<String> excludedParams = new HashSet<>();
+    private Set<String> excludedClasses = new HashSet<>();
+    private String applicationPackage;
+    private String honeybadgerReadApiKey;
+    private Boolean feedbackFormDisplayed;
+    private String feedbackFormPath;
+    private String httpProxyHost;
+    private Integer httpProxyPort;
 
     /**
      * Constructor that prepopulates configuration context with the default
@@ -48,7 +50,7 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
      *
      * @param defaultingContext context that provides default values
      */
-    public BaseChainedConfigContext(ConfigContext defaultingContext) {
+    public BaseChainedConfigContext(final ConfigContext defaultingContext) {
         overwriteWithContext(defaultingContext);
     }
 
@@ -57,9 +59,19 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
         return environment;
     }
 
+    public BaseChainedConfigContext setEnvironment(final String environment) {
+        this.environment = environment;
+        return this;
+    }
+
     @Override
     public URI getHoneybadgerUrl() {
         return honeybadgerUrl;
+    }
+
+    public BaseChainedConfigContext setHoneybadgerUrl(final URI honeybadgerUrl) {
+        this.honeybadgerUrl = honeybadgerUrl;
+        return this;
     }
 
     @Override
@@ -67,9 +79,19 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
         return apiKey;
     }
 
+    public BaseChainedConfigContext setApiKey(final String apiKey) {
+        this.apiKey = apiKey;
+        return this;
+    }
+
     @Override
     public Set<String> getExcludedSysProps() {
         return excludedSysProps;
+    }
+
+    public BaseChainedConfigContext setExcludedSysProps(final Set<String> excludedSysProps) {
+        this.excludedSysProps = excludedSysProps;
+        return this;
     }
 
     @Override
@@ -77,9 +99,19 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
         return excludedParams;
     }
 
+    public BaseChainedConfigContext setExcludedParams(final Set<String> excludedParams) {
+        this.excludedParams = excludedParams;
+        return this;
+    }
+
     @Override
     public Set<String> getExcludedClasses() {
         return excludedClasses;
+    }
+
+    public BaseChainedConfigContext setExcludedClasses(final Set<String> excludedClasses) {
+        this.excludedClasses = excludedClasses;
+        return this;
     }
 
     @Override
@@ -87,14 +119,24 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
         return applicationPackage;
     }
 
+    public BaseChainedConfigContext setApplicationPackage(final String applicationPackage) {
+        this.applicationPackage = applicationPackage;
+        return this;
+    }
+
     @Override
     public String getHoneybadgerReadApiKey() {
         return honeybadgerReadApiKey;
     }
 
+    public BaseChainedConfigContext setHoneybadgerReadApiKey(final String honeybadgerReadApiKey) {
+        this.honeybadgerReadApiKey = honeybadgerReadApiKey;
+        return this;
+    }
+
     @Override
     public Boolean isFeedbackFormDisplayed() {
-        return feedbackFormDisplayed;
+        return getFeedbackFormDisplayed();
     }
 
     @Override
@@ -102,14 +144,29 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
         return feedbackFormPath;
     }
 
+    public BaseChainedConfigContext setFeedbackFormPath(final String feedbackFormPath) {
+        this.feedbackFormPath = feedbackFormPath;
+        return this;
+    }
+
     @Override
     public String getHttpProxyHost() {
         return httpProxyHost;
     }
 
+    public BaseChainedConfigContext setHttpProxyHost(final String httpProxyHost) {
+        this.httpProxyHost = httpProxyHost;
+        return this;
+    }
+
     @Override
     public Integer getHttpProxyPort() {
         return httpProxyPort;
+    }
+
+    public BaseChainedConfigContext setHttpProxyPort(final Integer httpProxyPort) {
+        this.httpProxyPort = httpProxyPort;
+        return this;
     }
 
     /**
@@ -118,7 +175,7 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
      *
      * @param context context to overwrite configuration with
      */
-    public void overwriteWithContext(ConfigContext context) {
+    public void overwriteWithContext(final ConfigContext context) {
         if (isPresent(context.getEnvironment())) {
             this.environment = context.getEnvironment();
         }
@@ -167,57 +224,8 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
         }
     }
 
-    public BaseChainedConfigContext setEnvironment(String environment) {
-        this.environment = environment;
-        return this;
-    }
-
-    public BaseChainedConfigContext setHoneybadgerUrl(URI honeybadgerUrl) {
-        this.honeybadgerUrl = honeybadgerUrl;
-        return this;
-    }
-
-    public BaseChainedConfigContext setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-        return this;
-    }
-
-    public BaseChainedConfigContext setExcludedSysProps(Set<String> excludedSysProps) {
-        this.excludedSysProps = excludedSysProps;
-        return this;
-    }
-
-    public BaseChainedConfigContext setExcludedParams(Set<String> excludedParams) {
-        this.excludedParams = excludedParams;
-        return this;
-    }
-
-    public BaseChainedConfigContext setExcludedClasses(Set<String> excludedClasses) {
-        this.excludedClasses = excludedClasses;
-        return this;
-    }
-
-    public BaseChainedConfigContext setApplicationPackage(String applicationPackage) {
-        this.applicationPackage = applicationPackage;
-        return this;
-    }
-
-    public BaseChainedConfigContext setHoneybadgerReadApiKey(String honeybadgerReadApiKey) {
-        this.honeybadgerReadApiKey = honeybadgerReadApiKey;
-        return this;
-    }
-
-    public BaseChainedConfigContext setHttpProxyHost(String httpProxyHost) {
-        this.httpProxyHost = httpProxyHost;
-        return this;
-    }
-
-    public BaseChainedConfigContext setHttpProxyPort(Integer httpProxyPort) {
-        this.httpProxyPort = httpProxyPort;
-        return this;
-    }
-
-    public Boolean setFeedbackFormDisplayed(Boolean feedbackFormDisplayed) {
+    @SuppressWarnings("HiddenField")
+    public Boolean setFeedbackFormDisplayed(final Boolean feedbackFormDisplayed) {
         if (feedbackFormDisplayed == null) {
             throw new IllegalArgumentException(
                     "This value should be only null during initialization");
@@ -227,77 +235,52 @@ public abstract class BaseChainedConfigContext implements ConfigContext {
         return feedbackFormDisplayed;
     }
 
-    public BaseChainedConfigContext setFeedbackFormPath(String feedbackFormPath) {
-        this.feedbackFormPath = feedbackFormPath;
-        return this;
-    }
-
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         BaseChainedConfigContext that = (BaseChainedConfigContext) o;
-
-        if (environment != null ? !environment.equals(that.environment) : that.environment != null)
-            return false;
-        if (honeybadgerUrl != null ? !honeybadgerUrl.equals(that.honeybadgerUrl) : that.honeybadgerUrl != null)
-            return false;
-        if (apiKey != null ? !apiKey.equals(that.apiKey) : that.apiKey != null)
-            return false;
-        if (excludedSysProps != null ? !excludedSysProps.equals(that.excludedSysProps) : that.excludedSysProps != null)
-            return false;
-        if (excludedParams != null ? !excludedParams.equals(that.excludedParams) : that.excludedParams != null)
-            return false;
-        if (excludedClasses != null ? !excludedClasses.equals(that.excludedClasses) : that.excludedClasses != null)
-            return false;
-        if (applicationPackage != null ? !applicationPackage.equals(that.applicationPackage) : that.applicationPackage != null)
-            return false;
-        if (honeybadgerReadApiKey != null ? !honeybadgerReadApiKey.equals(that.honeybadgerReadApiKey) : that.honeybadgerReadApiKey != null)
-            return false;
-        if (feedbackFormDisplayed != null ? !feedbackFormDisplayed.equals(that.feedbackFormDisplayed) : that.feedbackFormDisplayed != null)
-            return false;
-        if (feedbackFormPath != null ? !feedbackFormPath.equals(that.feedbackFormPath) : that.feedbackFormPath != null)
-            return false;
-        if (httpProxyHost != null ? !httpProxyHost.equals(that.httpProxyHost) : that.httpProxyHost != null)
-            return false;
-        return !(httpProxyPort != null ? !httpProxyPort.equals(that.httpProxyPort) : that.httpProxyPort != null);
-
+        return Objects.equals(getEnvironment(), that.getEnvironment()) &&
+                Objects.equals(getHoneybadgerUrl(), that.getHoneybadgerUrl()) &&
+                Objects.equals(getApiKey(), that.getApiKey()) &&
+                Objects.equals(getExcludedSysProps(), that.getExcludedSysProps()) &&
+                Objects.equals(getExcludedParams(), that.getExcludedParams()) &&
+                Objects.equals(getExcludedClasses(), that.getExcludedClasses()) &&
+                Objects.equals(getApplicationPackage(), that.getApplicationPackage()) &&
+                Objects.equals(getHoneybadgerReadApiKey(), that.getHoneybadgerReadApiKey()) &&
+                Objects.equals(getFeedbackFormDisplayed(), that.getFeedbackFormDisplayed()) &&
+                Objects.equals(getFeedbackFormPath(), that.getFeedbackFormPath()) &&
+                Objects.equals(getHttpProxyHost(), that.getHttpProxyHost()) &&
+                Objects.equals(getHttpProxyPort(), that.getHttpProxyPort());
     }
 
     @Override
     public int hashCode() {
-        int result = environment != null ? environment.hashCode() : 0;
-        result = 31 * result + (honeybadgerUrl != null ? honeybadgerUrl.hashCode() : 0);
-        result = 31 * result + (apiKey != null ? apiKey.hashCode() : 0);
-        result = 31 * result + (excludedSysProps != null ? excludedSysProps.hashCode() : 0);
-        result = 31 * result + (excludedParams != null ? excludedParams.hashCode() : 0);
-        result = 31 * result + (excludedClasses != null ? excludedClasses.hashCode() : 0);
-        result = 31 * result + (applicationPackage != null ? applicationPackage.hashCode() : 0);
-        result = 31 * result + (honeybadgerReadApiKey != null ? honeybadgerReadApiKey.hashCode() : 0);
-        result = 31 * result + (feedbackFormDisplayed != null ? feedbackFormDisplayed.hashCode() : 0);
-        result = 31 * result + (feedbackFormPath != null ? feedbackFormPath.hashCode() : 0);
-        result = 31 * result + (httpProxyHost != null ? httpProxyHost.hashCode() : 0);
-        result = 31 * result + (httpProxyPort != null ? httpProxyPort.hashCode() : 0);
-        return result;
+        return Objects.hash(getEnvironment(), getHoneybadgerUrl(), getApiKey(), getExcludedSysProps(), getExcludedParams(),
+                getExcludedClasses(), getApplicationPackage(), getHoneybadgerReadApiKey(), getFeedbackFormDisplayed(),
+                getFeedbackFormPath(), getHttpProxyHost(), getHttpProxyPort());
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("BaseChainedConfigContext{");
-        sb.append("environment='").append(environment).append('\'');
-        sb.append(", honeybadgerUrl='").append(honeybadgerUrl).append('\'');
-        sb.append(", apiKey='").append(apiKey).append('\'');
-        sb.append(", excludedSysProps=").append(excludedSysProps);
-        sb.append(", excludedParams=").append(excludedParams);
-        sb.append(", excludedClasses=").append(excludedClasses);
-        sb.append(", applicationPackage='").append(applicationPackage).append('\'');
-        sb.append(", honeybadgerReadApiKey='").append(honeybadgerReadApiKey).append('\'');
-        sb.append(", feedbackFormDisplayed=").append(feedbackFormDisplayed);
-        sb.append(", feedbackFormPath='").append(feedbackFormPath).append('\'');
-        sb.append(", httpProxyHost='").append(httpProxyHost).append('\'');
-        sb.append(", httpProxyPort=").append(httpProxyPort);
+        sb.append("environment='").append(getEnvironment()).append('\'');
+        sb.append(", honeybadgerUrl='").append(getHoneybadgerUrl()).append('\'');
+        sb.append(", apiKey='").append(getApiKey()).append('\'');
+        sb.append(", excludedSysProps=").append(getExcludedSysProps());
+        sb.append(", excludedParams=").append(getExcludedParams());
+        sb.append(", excludedClasses=").append(getExcludedClasses());
+        sb.append(", applicationPackage='").append(getApplicationPackage()).append('\'');
+        sb.append(", honeybadgerReadApiKey='").append(getHoneybadgerReadApiKey()).append('\'');
+        sb.append(", feedbackFormDisplayed=").append(getFeedbackFormDisplayed());
+        sb.append(", feedbackFormPath='").append(getFeedbackFormPath()).append('\'');
+        sb.append(", httpProxyHost='").append(getHttpProxyHost()).append('\'');
+        sb.append(", httpProxyPort=").append(getHttpProxyPort());
         sb.append('}');
         return sb.toString();
+    }
+
+    protected Boolean getFeedbackFormDisplayed() {
+        return feedbackFormDisplayed;
     }
 }

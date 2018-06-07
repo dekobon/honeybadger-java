@@ -25,6 +25,7 @@ public class Memory implements Serializable {
     private static final long serialVersionUID = -8799953046383217102L;
 
     private static final String LINUX_MEMINFO_PATH = "/proc/meminfo";
+    public static final int JVM_INFO_INITIAL_CAPACITY = 10;
 
     public final Number total;
     public final Number free;
@@ -64,19 +65,20 @@ public class Memory implements Serializable {
         this.vm_nonheap = vmMemValues.get("VmNonHeap");
     }
 
-    public Memory(Number total, Number free, Number buffers, Number cached,
-                  Number free_total, Number vm_free, Number vm_max,
-                  Number vm_total, Number vm_heap, Number vm_nonheap) {
+    @SuppressWarnings("CheckStyle")
+    public Memory(final Number total, final Number free, final Number buffers, final Number cached,
+                  final Number freeTotal, final Number vmFree, final Number vmMax,
+                  final Number vmTotal, final Number vmHeap, final Number vmNonheap) {
         this.total = total;
         this.free = free;
         this.buffers = buffers;
         this.cached = cached;
-        this.free_total = free_total;
-        this.vm_free = vm_free;
-        this.vm_max = vm_max;
-        this.vm_total = vm_total;
-        this.vm_heap = vm_heap;
-        this.vm_nonheap = vm_nonheap;
+        this.free_total = freeTotal;
+        this.vm_free = vmFree;
+        this.vm_max = vmMax;
+        this.vm_total = vmTotal;
+        this.vm_heap = vmHeap;
+        this.vm_nonheap = vmNonheap;
     }
 
     static Map<String, Long> findLinuxMemInfo(final File memInfoFile) {
@@ -122,7 +124,7 @@ public class Memory implements Serializable {
     }
 
     static Map<String, Number> findJvmMemInfo() {
-        Map<String, Number> jvmInfo = new HashMap<>(10);
+        Map<String, Number> jvmInfo = new HashMap<>(JVM_INFO_INITIAL_CAPACITY);
         Runtime runtime = Runtime.getRuntime();
         MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
         final long mebibyte = 1_048_576L;
@@ -150,16 +152,16 @@ public class Memory implements Serializable {
         }
 
         final Memory memory = (Memory) o;
-        return Objects.equals(total, memory.total)
-                && Objects.equals(free, memory.free)
-                && Objects.equals(buffers, memory.buffers)
-                && Objects.equals(cached, memory.cached)
-                && Objects.equals(free_total, memory.free_total)
-                && Objects.equals(vm_free, memory.vm_free)
-                && Objects.equals(vm_max, memory.vm_max)
-                && Objects.equals(vm_total, memory.vm_total)
-                && Objects.equals(vm_heap, memory.vm_heap)
-                && Objects.equals(vm_nonheap, memory.vm_nonheap);
+        return Objects.equals(total, memory.total) &&
+                Objects.equals(free, memory.free) &&
+                Objects.equals(buffers, memory.buffers) &&
+                Objects.equals(cached, memory.cached) &&
+                Objects.equals(free_total, memory.free_total) &&
+                Objects.equals(vm_free, memory.vm_free) &&
+                Objects.equals(vm_max, memory.vm_max) &&
+                Objects.equals(vm_total, memory.vm_total) &&
+                Objects.equals(vm_heap, memory.vm_heap) &&
+                Objects.equals(vm_nonheap, memory.vm_nonheap);
     }
 
     @Override

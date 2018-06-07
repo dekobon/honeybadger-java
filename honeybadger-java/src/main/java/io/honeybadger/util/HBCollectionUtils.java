@@ -1,6 +1,8 @@
 package io.honeybadger.util;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Commonly shared Collection utilities.
@@ -8,7 +10,7 @@ import java.util.*;
  * @author <a href="https://github.com/dekobon">Elijah Zupancic</a>
  * @since 1.0.11
  */
-public class HBCollectionUtils {
+public final class HBCollectionUtils {
     private HBCollectionUtils() { }
 
     /**
@@ -16,7 +18,7 @@ public class HBCollectionUtils {
      * @param collection Collection to check
      * @return true if null or empty
      */
-    public static boolean isPresent(Collection<?> collection) {
+    public static boolean isPresent(final Collection<?> collection) {
         return collection != null && !collection.isEmpty();
     }
 
@@ -29,7 +31,7 @@ public class HBCollectionUtils {
      * @param csv CSV string input
      * @return a collection of values base on CSV
      */
-    public static Collection<String> parseNaiveCsvString(String csv) {
+    public static Collection<String> parseNaiveCsvString(final String csv) {
         if (!HBStringUtils.isPresent(csv)) {
             return Collections.emptyList();
         }

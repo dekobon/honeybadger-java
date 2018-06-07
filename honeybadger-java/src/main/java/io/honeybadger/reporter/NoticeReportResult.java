@@ -2,6 +2,7 @@ package io.honeybadger.reporter;
 
 import io.honeybadger.reporter.dto.Notice;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -13,7 +14,7 @@ public class NoticeReportResult {
     private final Notice notice;
     private final Throwable error;
 
-    public NoticeReportResult(UUID id, Notice notice, Throwable error) {
+    public NoticeReportResult(final UUID id, final Notice notice, final Throwable error) {
         this.id = id;
         this.notice = notice;
         this.error = error;
@@ -34,24 +35,18 @@ public class NoticeReportResult {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         NoticeReportResult that = (NoticeReportResult) o;
-
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (notice != null ? !notice.equals(that.notice) : that.notice != null) return false;
-        return !(error != null ? !error.equals(that.error) : that.error != null);
-
+        return Objects.equals(id, that.id) &&
+                Objects.equals(notice, that.notice) &&
+                Objects.equals(error, that.error);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (notice != null ? notice.hashCode() : 0);
-        result = 31 * result + (error != null ? error.hashCode() : 0);
-        return result;
+        return Objects.hash(id, notice, error);
     }
 
     @Override

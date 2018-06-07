@@ -12,36 +12,36 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.0
  */
 public class HoneybadgerUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-    protected ConfigContext config;
-    protected NoticeReporter reporter;
-    protected Logger logger = LoggerFactory.getLogger(getClass());
+    private ConfigContext config;
+    private NoticeReporter reporter;
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     public HoneybadgerUncaughtExceptionHandler() {
         this(new SystemSettingsConfigContext());
     }
 
-    public HoneybadgerUncaughtExceptionHandler(ConfigContext config) {
-        this.config = config;
-        this.reporter = new HoneybadgerReporter(config);
+    public HoneybadgerUncaughtExceptionHandler(final ConfigContext config) {
+        this.setConfig(config);
+        this.setReporter(new HoneybadgerReporter(config));
     }
 
     @Override
-    public void uncaughtException(Thread t, Throwable e) {
+    public void uncaughtException(final Thread t, final Throwable e) {
         NoticeReportResult errorResult = null;
 
         try {
-            errorResult = reporter.reportError(e);
+            errorResult = getReporter().reportError(e);
         } catch (RuntimeException re) {
-            if (logger.isErrorEnabled()) {
-                logger.error("An error occurred when sending data to the " +
+            if (getLogger().isErrorEnabled()) {
+                getLogger().error("An error occurred when sending data to the " +
                              "Honeybadger API", re);
             }
         } finally {
-            if (logger.isErrorEnabled()) {
+            if (getLogger().isErrorEnabled()) {
                 String msg = "An unhandled exception has occurred [%s]";
                 String id = (errorResult == null) ?
                         "no-id" : errorResult.getId().toString();
-                logger.error(String.format(msg, id), e);
+                getLogger().error(String.format(msg, id), e);
             }
         }
     }
@@ -75,7 +75,7 @@ public class HoneybadgerUncaughtExceptionHandler implements Thread.UncaughtExcep
      * @param configContext configuration context for Honeybadger setup
      */
     public static void registerAsUncaughtExceptionHandler(
-            ConfigContext configContext) {
+            final ConfigContext configContext) {
         Thread.UncaughtExceptionHandler handler =
                 new HoneybadgerUncaughtExceptionHandler(configContext);
         Thread.setDefaultUncaughtExceptionHandler(handler);
@@ -88,7 +88,7 @@ public class HoneybadgerUncaughtExceptionHandler implements Thread.UncaughtExcep
      * @param t thread to register handler for
      */
     public static void registerAsUncaughtExceptionHandler(
-            java.lang.Thread t) {
+            final java.lang.Thread t) {
         Thread.UncaughtExceptionHandler handler =
                 new HoneybadgerUncaughtExceptionHandler();
         t.setUncaughtExceptionHandler(handler);
@@ -102,9 +102,25 @@ public class HoneybadgerUncaughtExceptionHandler implements Thread.UncaughtExcep
      * @param t thread to register handler for
      */
     public static void registerAsUncaughtExceptionHandler(
-            ConfigContext configContext, java.lang.Thread t) {
+            final ConfigContext configContext, final java.lang.Thread t) {
         Thread.UncaughtExceptionHandler handler =
                 new HoneybadgerUncaughtExceptionHandler(configContext);
         t.setUncaughtExceptionHandler(handler);
+    }
+
+    protected void setConfig(final ConfigContext config) {
+        this.config = config;
+    }
+
+    protected void setReporter(final NoticeReporter reporter) {
+        this.reporter = reporter;
+    }
+
+    protected Logger getLogger() {
+        return logger;
+    }
+
+    protected void setLogger(final Logger logger) {
+        this.logger = logger;
     }
 }
